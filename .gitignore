@@ -1,0 +1,4 @@
+*.mp4
+still_*.jpg
+list.txt
+__pycache__/

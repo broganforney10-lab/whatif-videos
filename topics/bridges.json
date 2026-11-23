@@ -1,0 +1,69 @@
+{
+  "title": "What if every bridge vanished?",
+  "output": "bridges_short.mp4",
+  "scenes": [
+    {
+      "seconds": 4.5,
+      "kicker": "WHAT IF",
+      "big": "EVERY\nBRIDGE",
+      "body": "on Earth vanished overnight?",
+      "bridge": "vanish"
+    },
+    {
+      "seconds": 4.5,
+      "kicker": "THE U.S. ALONE HAS",
+      "big": "624,000",
+      "body": "bridges. All gone by morning.",
+      "bridge": "gap"
+    },
+    {
+      "seconds": 4.5,
+      "kicker": "NEW YORK CITY LOSES",
+      "big": "789",
+      "body": "bridges and tunnels.\nManhattan is an island again.",
+      "bridge": "gap"
+    },
+    {
+      "seconds": 4.5,
+      "kicker": "DAY 2",
+      "big": "EMPTY\nSHELVES",
+      "body": "Trucks can't cross rivers.\nGroceries stop arriving.",
+      "bridge": "gap"
+    },
+    {
+      "seconds": 4.5,
+      "kicker": "TRAINS",
+      "big": "STOP.",
+      "body": "Every rail line dead-ends\nat the water's edge.",
+      "bridge": "gap"
+    },
+    {
+      "seconds": 4.5,
+      "kicker": "HAMBURG, GERMANY LOSES",
+      "big": "~2,500",
+      "body": "bridges and splits\ninto islands.",
+      "bridge": "gap"
+    },
+    {
+      "seconds": 4.5,
+      "kicker": "THE MOST VALUABLE THING NOW",
+      "big": "BOATS",
+      "body": "Every ferry is booked for months.",
+      "bridge": "boats"
+    },
+    {
+      "seconds": 4.0,
+      "kicker": "REBUILDING ALL OF IT?",
+      "big": "DECADES.",
+      "body": "",
+      "bridge": "gap"
+    },
+    {
+      "seconds": 4.5,
+      "kicker": "FOLLOW FOR MORE",
+      "big": "WHAT\nVANISHES\nNEXT?",
+      "body": "Comment below",
+      "bridge": "gap"
+    }
+  ]
+}
