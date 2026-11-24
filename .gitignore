@@ -2,3 +2,5 @@
 still_*.jpg
 list.txt
 __pycache__/
+.venv/
+build/

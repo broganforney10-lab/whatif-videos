@@ -7,63 +7,72 @@
       "kicker": "WHAT IF",
       "big": "EVERY\nBRIDGE",
       "body": "on Earth vanished overnight?",
-      "bridge": "vanish"
+      "bridge": "vanish",
+      "say": "You wake up. Every bridge on Earth is gone."
     },
     {
       "seconds": 4.5,
       "kicker": "THE U.S. ALONE HAS",
       "big": "624,000",
       "body": "bridges. All gone by morning.",
-      "bridge": "gap"
+      "bridge": "gap",
+      "say": "The U.S. alone has about 624,000 bridges. All of them, gone overnight."
     },
     {
       "seconds": 4.5,
       "kicker": "NEW YORK CITY LOSES",
       "big": "789",
       "body": "bridges and tunnels.\nManhattan is an island again.",
-      "bridge": "gap"
+      "bridge": "gap",
+      "say": "New York City loses 789 bridges and tunnels. Manhattan is an island again."
     },
     {
       "seconds": 4.5,
       "kicker": "DAY 2",
       "big": "EMPTY\nSHELVES",
       "body": "Trucks can't cross rivers.\nGroceries stop arriving.",
-      "bridge": "gap"
+      "bridge": "gap",
+      "say": "Trucks can't cross rivers. Grocery shelves start emptying in days."
     },
     {
       "seconds": 4.5,
       "kicker": "TRAINS",
       "big": "STOP.",
       "body": "Every rail line dead-ends\nat the water's edge.",
-      "bridge": "gap"
+      "bridge": "gap",
+      "say": "Trains stop dead at every river. Freight piles up on the banks."
     },
     {
       "seconds": 4.5,
       "kicker": "HAMBURG, GERMANY LOSES",
       "big": "~2,500",
       "body": "bridges and splits\ninto islands.",
-      "bridge": "gap"
+      "bridge": "gap",
+      "say": "Hamburg, Germany, loses about 2,500 bridges. It turns into islands."
     },
     {
       "seconds": 4.5,
       "kicker": "THE MOST VALUABLE THING NOW",
       "big": "BOATS",
       "body": "Every ferry is booked for months.",
-      "bridge": "boats"
+      "bridge": "boats",
+      "say": "Ferries and boats become the most valuable thing in the world."
     },
     {
       "seconds": 4.0,
       "kicker": "REBUILDING ALL OF IT?",
       "big": "DECADES.",
       "body": "",
-      "bridge": "gap"
+      "bridge": "gap",
+      "say": "Rebuilding? Engineers would need decades."
     },
     {
       "seconds": 4.5,
       "kicker": "FOLLOW FOR MORE",
       "big": "WHAT\nVANISHES\nNEXT?",
       "body": "Comment below",
-      "bridge": "gap"
+      "bridge": "gap",
+      "say": "Follow for more. What should vanish next?"
     }
   ]
 }

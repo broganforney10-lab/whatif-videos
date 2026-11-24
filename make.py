@@ -10,10 +10,14 @@ BODY = ImageFont.truetype(F + "Inter-SemiBold.otf", 58)
 SMALL = ImageFont.truetype(F + "Inter-Bold.otf", 40)
 ACCENT = (255, 196, 61)
 
-# scene: (duration, kicker, big, body, bridge_mode)
+CAP = ImageFont.truetype(F + "InterDisplay-Black.otf", 96)
+
+# scene: [duration, kicker, big, body, bridge_mode]  (`full` replaces duration with the voice length)
 import json
 TOPIC = json.load(open(sys.argv[2] if len(sys.argv) > 2 else "topics/bridges.json"))
-SCENES = [(sc["seconds"], sc["kicker"], sc["big"], sc.get("body", ""), sc.get("bridge", "gap")) for sc in TOPIC["scenes"]]
+SCENES = [[sc["seconds"], sc["kicker"], sc["big"], sc.get("body", ""), sc.get("bridge", "gap")] for sc in TOPIC["scenes"]]
+CAPTIONS = []   # [(start, end, [(word, start, end), ...])] in video time; filled by `full`
+STARTS = []     # scene start times in video time
 
 def ease(t):
     t = max(0.0, min(1.0, t))
@@ -145,6 +149,8 @@ def frame(si, f):
     y = text_center(d, y + (1 - a2) * 60, big, font, fade_col((255, 255, 255), a2), spacing=20) + 50
     if body:
         text_center(d, y + (1 - a3) * 30, body, BODY, fade_col((210, 220, 235), a3), spacing=18)
+    if CAPTIONS:
+        draw_captions(d, STARTS[si] + t)
     # brand
     text_center(d, 1840, "@whatifitvanished", SMALL, (150, 170, 200))
     # progress bar
@@ -156,6 +162,28 @@ def frame(si, f):
     if k < 1:
         img = Image.blend(Image.new("RGB", (W, H)), img, max(0, k))
     return img
+
+CAP_Y = 1250  # caption baseline: above the bridge deck, below the scene text
+
+def draw_captions(d, now):
+    """Word-by-word captions synced to the voice; the word being spoken is yellow."""
+    for c0, c1, words in CAPTIONS:
+        if not c0 <= now < c1:
+            continue
+        txt = [w for w, _, _ in words]
+        font = CAP
+        width = lambda f: sum(d.textlength(w, font=f) for w in txt) + d.textlength(" ", font=f) * (len(txt) - 1)
+        while width(font) > W - 120:
+            font = ImageFont.truetype(F + "InterDisplay-Black.otf", font.size - 4)
+        x = (W - width(font)) / 2
+        y = CAP_Y + (1 - ease((now - c0) / 0.12)) * 18
+        # exactly one highlighted word: the latest one that has started (whisper times can overlap)
+        active = max((i for i, (_, w0, _) in enumerate(words) if w0 <= now), default=-1)
+        for i, (w, w0, w1) in enumerate(words):
+            col = ACCENT if i == active else (255, 255, 255)
+            d.text((x, y), w, font=font, fill=col, stroke_width=9, stroke_fill=(0, 0, 0), anchor="ls")
+            x += d.textlength(w + " ", font=font)
+        return
 
 def render_scene(si, out):
     dur = SCENES[si][0]
@@ -170,17 +198,109 @@ def render_scene(si, out):
     if p.wait() == 0:
         os.rename(tmp, out)
 
+# ---- voiceover pipeline (`full`) -------------------------------------------------
+HERE = os.path.dirname(os.path.abspath(__file__))
+VENV_PY = os.path.join(HERE, ".venv", "bin", "python")
+BUILD = os.path.join(HERE, "build", os.path.splitext(os.path.basename(sys.argv[2] if len(sys.argv) > 2 else "bridges"))[0])
+LEAD = 0.25    # seconds of quiet at the top of each scene before the voice starts
+GAP = 0.45     # breathing room after each line
+TAIL = 0.8     # extra hold on the last scene
+MIN_SCENE = 2.5
+WORDS_PER_CAPTION = 3
+
+def voice(cmd, job):
+    """Run voice.py in the venv that has Chatterbox + faster-whisper."""
+    py = VENV_PY if os.path.exists(VENV_PY) else sys.executable
+    path = os.path.join(BUILD, f"{cmd}.json")
+    json.dump(job, open(path, "w"), indent=1)
+    out = subprocess.run([py, os.path.join(HERE, "voice.py"), cmd, path], check=True, stdout=subprocess.PIPE, text=True)
+    return json.loads(out.stdout.strip().splitlines()[-1])
+
+def script_lines():
+    lines = []
+    for sc, (_, kicker, big, body, _) in zip(TOPIC["scenes"], SCENES):
+        say = sc.get("say") or " ".join(x for x in (kicker, big.replace("\n", " "), body.replace("\n", " ")) if x)
+        lines.append(" ".join(say.split()))
+    return lines
+
+def caption_chunks(words, scene_end):
+    """Group words into short on-screen captions (break on punctuation)."""
+    chunks, cur = [], []
+    for w in words:
+        cur.append(w)
+        if len(cur) == WORDS_PER_CAPTION or w[0][-1] in ".,?!:;":
+            chunks.append(cur)
+            cur = []
+    if cur:
+        chunks.append(cur)
+    out = []
+    for i, ch in enumerate(chunks):
+        end = chunks[i + 1][0][1] if i + 1 < len(chunks) else min(scene_end, ch[-1][2] + 0.6)
+        out.append((ch[0][1], end, ch))
+    return out
+
+def prepare_voice():
+    os.makedirs(BUILD, exist_ok=True)
+    lines = script_lines()
+    print(f"[1/4] voiceover: {len(lines)} lines (Chatterbox Turbo)")
+    clips = voice("speak", {"lines": lines, "cache": os.path.join(HERE, "build", "tts-cache"), "voice": TOPIC.get("voice")})
+    t = 0.0
+    for i, (sc, clip) in enumerate(zip(SCENES, clips)):
+        dur = max(MIN_SCENE, LEAD + clip["seconds"] + GAP) + (TAIL if i == len(SCENES) - 1 else 0)
+        sc[0] = round(dur * FPS) / FPS          # whole frames, so audio and video stay in sync
+        STARTS.append(t)
+        t += sc[0]
+    print(f"[2/4] word timings (faster-whisper), video length {t:.1f}s")
+    timed = voice("words", {"lines": [{"text": l, "wav": c["wav"]} for l, c in zip(lines, clips)]})
+    for si, words in enumerate(timed):
+        off = STARTS[si] + LEAD
+        ws = [(w["w"], off + w["start"], off + w["end"]) for w in words]
+        CAPTIONS.extend(caption_chunks(ws, STARTS[si] + SCENES[si][0]))
+    json.dump(CAPTIONS, open(os.path.join(BUILD, "captions.json"), "w"), indent=1)
+    wav = os.path.join(BUILD, "voice.wav")
+    voice("mix", {"clips": [{"wav": c["wav"], "start": s + LEAD} for c, s in zip(clips, STARTS)], "total": t, "out": wav})
+    return wav
+
+LOUDNESS = "I=-14:TP=-1.5:LRA=7"   # YouTube Shorts / Reels target
+COMPRESS = "acompressor=threshold=-20dB:ratio=3:attack=5:release=120:makeup=2"
+
+def audio_filter(wav):
+    """Two-pass loudnorm: measure the voice track, then normalise it exactly to -14 LUFS."""
+    probe = subprocess.run(["ffmpeg", "-hide_banner", "-i", wav, "-af", f"{COMPRESS},loudnorm={LOUDNESS}:print_format=json",
+                            "-f", "null", "-"], capture_output=True, text=True, check=True).stderr
+    m = json.loads(probe[probe.rindex("{"):probe.rindex("}") + 1])
+    return (f"{COMPRESS},loudnorm={LOUDNESS}:measured_I={m['input_i']}:measured_TP={m['input_tp']}"
+            f":measured_LRA={m['input_lra']}:measured_thresh={m['input_thresh']}:offset={m['target_offset']}:linear=true")
+
+def render_video(out_dir):
+    files = []
+    for si in range(len(SCENES)):
+        out = os.path.join(out_dir, f"scene{si}.mp4")
+        render_scene(si, out)
+        files.append(out)
+    lst = os.path.join(out_dir, "list.txt")
+    with open(lst, "w") as fh:
+        fh.write("".join(f"file '{os.path.abspath(x)}'\n" for x in files))
+    return lst
+
 if __name__ == "__main__":
-    if sys.argv[1] == "stills":
+    cmd = sys.argv[1]
+    if cmd == "stills":
         for si, f in [(0, 10), (0, 70), (1, 60), (6, 60), (8, 60)]:
             frame(si, f).save(f"still_{si}_{f}.jpg", quality=90)
-    else:
-        files = []
-        for si in range(len(SCENES)):
-            out = f"scene{si}.mp4"
-            render_scene(si, out)
-            files.append(out)
-        with open("list.txt", "w") as fh:
-            fh.write("".join(f"file '{x}'\n" for x in files))
-        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", "list.txt",
+    elif cmd == "silent":   # the original silent render
+        lst = render_video(".")
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", lst,
                         "-c", "copy", "-movflags", "+faststart", TOPIC["output"]], check=True)
+    elif cmd == "full":     # script -> voice -> word timings -> synced captions -> MP4 with audio
+        wav = prepare_voice()
+        print(f"[3/4] rendering {len(SCENES)} scenes")
+        lst = render_video(BUILD)
+        print(f"[4/4] muxing audio -> {TOPIC['output']}")
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", lst, "-i", wav,
+                        "-map", "0:v", "-map", "1:a", "-c:v", "copy",
+                        "-af", audio_filter(wav), "-ar", "48000", "-c:a", "aac", "-b:a", "192k",
+                        "-shortest", "-movflags", "+faststart", TOPIC["output"]], check=True)
+        print("done:", TOPIC["output"])
+    else:
+        sys.exit("usage: make.py full|silent|stills topics/<topic>.json")
