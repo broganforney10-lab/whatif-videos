@@ -26,6 +26,15 @@ CATS = {
 }
 
 EMO = {
+    "crab": "🦀", "crabs": "🦀", "blood": "🩸", "barcode": "🏷️", "pallet": "📦", "box": "📦", "boxes": "📦",
+    "forklifts": "🚜", "beer": "🍺", "wine": "🍷", "donuts": "🍩", "pancakes": "🥞", "poop": "💩", "flies": "🪰",
+    "krill": "🦐", "shrimp": "🦐", "penguins": "🐧", "wolves": "🐺", "elk": "🦌", "otter": "🦦", "otters": "🦦",
+    "kelp": "🌿", "beaver": "🦫", "ducks": "🦆", "wasp": "🐝", "figs": "🫐", "monkeys": "🐒", "clock": "🕐",
+    "sundial": "☀️", "cats": "🐈", "toilets": "🚽", "plumber": "🔧", "pools": "🏊", "bleach": "🧴", "fax": "📠",
+    "stamp": "📮", "gummy": "🍬", "marshmallows": "🍡", "capsules": "💊", "lipstick": "💄", "orangutans": "🦧",
+    "vanilla": "🍦", "cream": "🍦", "yogurt": "🥛", "bug": "🐞", "germs": "🦠", "bacteria": "🦠", "leeches": "🩸",
+    "whisky": "🥃", "ladybug": "🐞", "aphids": "🐛", "oyster": "🦪", "oysters": "🦪", "pearls": "🦪",
+    "parrotfish": "🐠", "dust": "🌪️", "sunsets": "🌅", "hurricanes": "🌀",
     "bee": "🐝", "honey": "🍯", "almond": "🌰", "food": "🍽️", "crop": "🌾", "crops": "🌾", "farm": "🚜", "farmers": "👩‍🌾",
     "price": "💸", "prices": "💸", "money": "💰", "cash": "💵", "dollar": "💵", "bank": "🏦", "billion": "💰",
     "water": "💧", "rain": "🌧️", "river": "🏞️", "rivers": "🏞️", "ocean": "🌊", "sea": "🌊", "flood": "🌊", "floods": "🌊",
@@ -77,8 +86,23 @@ def h(s):
     return int(hashlib.md5(s.encode()).hexdigest(), 16)
 
 
+# Explicit picks for slugs where the keyword match would choose a poor set (videos 131-160).
+CAT_OVERRIDE = {
+    "horseshoe-crabs": "ocean", "krill": "ocean", "sea-otters": "ocean", "mangroves": "ocean",
+    "oysters": "ocean", "parrotfish": "ocean",
+    "yeast": "food", "dung-beetles": "food", "wolves": "food", "beavers": "food", "fig-wasps": "food",
+    "gelatin": "food", "palm-oil": "food", "vanilla": "food", "cochineal": "food", "gut-bacteria": "food",
+    "leeches": "food", "peat-bogs": "food", "ladybugs": "food", "sahara-dust": "food",
+    "barcodes": "tech", "time-zones": "tech", "atomic-clocks": "tech", "fax-machines": "tech",
+    "pallets": "build", "ball-bearings": "build", "sulfuric-acid": "build", "cardboard": "build",
+    "sewers": "build", "chlorine": "build",
+}
+
+
 def category(vid):
     slug = vid.split("-", 1)[1]
+    if slug in CAT_OVERRIDE:
+        return CAT_OVERRIDE[slug]
     for cat, (_, words) in CATS.items():
         if any(w in slug for w in words.split()):
             return cat

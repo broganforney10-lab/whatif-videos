@@ -466,3 +466,4 @@ assert len({t["slug"] for t in T}) == 100
 exec(open(_os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "topics3.py")).read())
 assert len(T) == 130, len(T)
 assert len({t["slug"] for t in T}) == 130
+exec(open(_os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "topics4.py")).read())
