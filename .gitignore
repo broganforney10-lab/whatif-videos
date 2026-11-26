@@ -4,3 +4,12 @@ list.txt
 __pycache__/
 .venv/
 build/
+3d/node_modules/
+3d/out/
+3d/out3d/
+3d/public/audio/
+3d/public/data/
+3d/public/story/
+series/build/
+series/out/
+series/gallery/
