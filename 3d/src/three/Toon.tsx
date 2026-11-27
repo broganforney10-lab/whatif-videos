@@ -43,7 +43,8 @@ export const Toon: React.FC<{
   pose: Pose;
   mouth: number; // 0..1 lip-sync
   coat?: string;
-  hat?: "top" | "cap" | "none" | "straw";
+  hat?: "top" | "cap" | "none" | "straw" | "helmet" | "space";
+  capColor?: string;
   position?: [number, number, number];
   heading?: number; // radians, 0 = facing camera (+z)
   scale?: number;
@@ -58,6 +59,7 @@ export const Toon: React.FC<{
   heading = 0,
   scale = 1,
   prop,
+  capColor = "#20345c",
 }) => {
   const walking = pose === "walk";
   const cyc = Math.sin(t * 9);
@@ -244,11 +246,11 @@ export const Toon: React.FC<{
               <sphereGeometry
                 args={[0.33, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2]}
               />
-              <meshStandardMaterial color="#20345c" />
+              <meshStandardMaterial color={capColor} />
             </mesh>
             <mesh position={[0, 0, 0.3]}>
               <boxGeometry args={[0.36, 0.03, 0.22]} />
-              <meshStandardMaterial color="#20345c" />
+              <meshStandardMaterial color={capColor} />
             </mesh>
           </group>
         )}
@@ -263,6 +265,28 @@ export const Toon: React.FC<{
               <meshStandardMaterial color="#d9b45a" {...flat} />
             </mesh>
           </group>
+        )}
+        {hat === "helmet" && (
+          <group position={[0, 0.06, -0.01]}>
+            <mesh>
+              <sphereGeometry args={[0.395, 24, 14, 0, Math.PI * 2, 0, Math.PI / 1.9]} />
+              <meshStandardMaterial color={capColor} roughness={0.18} metalness={0.25} />
+            </mesh>
+            <mesh position={[0, 0.0, 0.36]} rotation={[0.12, 0, 0]}>
+              <boxGeometry args={[0.42, 0.03, 0.16]} />
+              <meshStandardMaterial color={capColor} roughness={0.2} />
+            </mesh>
+            <mesh position={[-0.36, -0.12, 0.02]}>
+              <sphereGeometry args={[0.13, 12, 10]} />
+              <meshStandardMaterial color={capColor} roughness={0.2} />
+            </mesh>
+          </group>
+        )}
+        {hat === "space" && (
+          <mesh>
+            <sphereGeometry args={[0.52, 28, 20]} />
+            <meshStandardMaterial color="#cfe8ff" transparent opacity={0.22} roughness={0.05} metalness={0.6} depthWrite={false} />
+          </mesh>
         )}
       </group>
     </group>

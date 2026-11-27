@@ -1,6 +1,12 @@
 import { CalculateMetadataFunction, Composition, staticFile } from "remotion";
 import { VideoData, WhatIf2D } from "./WhatIf2D";
 import { Story3D, StoryData } from "./three/Story3D";
+import { Baseball3D, BBData } from "./three/Baseball3D";
+
+const bbMetadata: CalculateMetadataFunction<BBData | { id: string }> = async ({ props }) => {
+  const data: BBData = "shots" in props ? props : await (await fetch(staticFile(`bb/${props.id}.json`))).json();
+  return { durationInFrames: data.durationInFrames, props: data };
+};
 
 const storyMetadata: CalculateMetadataFunction<
   StoryData | { id: string }
@@ -47,6 +53,16 @@ export const RemotionRoot: React.FC = () => {
         height={1920}
         defaultProps={{ id: "02-bees" }}
         calculateMetadata={storyMetadata}
+      />
+      <Composition
+        id="Baseball3D"
+        component={Baseball3D as unknown as React.FC<BBData | { id: string }>}
+        durationInFrames={1215}
+        fps={30}
+        width={1080}
+        height={1920}
+        defaultProps={{ id: "01-moon" }}
+        calculateMetadata={bbMetadata}
       />
     </>
   );

@@ -25,7 +25,7 @@ for (const id of ids) {
   const t0 = Date.now();
   await renderMedia({
     composition, serveUrl, codec: "h264", crf: 20, inputProps, browserExecutable,
-    outputLocation: outputLocation + ".part.mp4", chromiumOptions: { gl: "swangle" }, scale: Number(process.env.SCALE || 1), concurrency: 4, imageFormat: "jpeg", jpegQuality: 90,
+    outputLocation: outputLocation + ".part.mp4", chromiumOptions: { gl: "swangle" }, scale: Number(process.env.SCALE || 1), concurrency: Number(process.env.CONC || 4), imageFormat: "jpeg", jpegQuality: 90,
   });
   fs.renameSync(outputLocation + ".part.mp4", outputLocation);
   console.log(`done ${id} in ${((Date.now() - t0) / 1000).toFixed(0)}s`);

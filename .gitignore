@@ -13,3 +13,7 @@ build/
 series/build/
 series/out/
 series/gallery/
+bbseries/build/
+3d/out_bb/
+3d/stills/
+3d/public/bbaudio/
