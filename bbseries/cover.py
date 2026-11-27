@@ -24,18 +24,22 @@ def wrap(d, text, font, maxw):
     return lines + [cur]
 
 
-def make(idx, t, at=1.6):
+COVER_FRAME = {"moon": 60, "120mph": 242, "mound": 377, "nogloves": 917}
+
+
+def make(idx, t):
     vid = f"{idx:02d}-{t['slug']}"
-    src = f"{OUT}/{vid}.mp4"
-    if not os.path.exists(src):
+    if not os.path.exists(f"{OUT}/{vid}.mp4"):
         return None
-    raw = f"/tmp/{vid}-frame.png"
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", str(at), "-i", src, "-frames:v", "1", raw], check=True)
-    im = Image.open(raw).convert("RGB")
+    fr = COVER_FRAME.get(t["slug"], 242)
+    env = dict(os.environ, CLEAN="1", SCALE="1")
+    subprocess.run(["node", "stills.mjs", vid, str(fr)], cwd=os.path.join(HERE, "..", "3d"), env=env, check=True,
+                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    im = Image.open(os.path.join(HERE, "..", "3d", "stills", f"clean-{vid}.jpg")).convert("RGB")
     # cover the burnt-in graphic/caption areas with a soft gradient so the title reads cleanly
     grad = Image.new("L", (1, im.height))
     for y in range(im.height):
-        grad.putpixel((0, y), int(230 * max(0, 1 - y / 900) ** 1.2))
+        grad.putpixel((0, y), int(215 * max(0, 1 - y / 820) ** 1.3))
     shade = Image.new("RGB", im.size, NAVY)
     im = Image.composite(shade, im, grad.resize(im.size))
     d = ImageDraw.Draw(im)
